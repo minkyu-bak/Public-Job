@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.public_job.apply.service.impl.UserapplyMapper">
+    
+    	<!-- 사용자_신청하기 쿼리문 -->
+	<insert id="apply">
+		INSERT INTO APPLY(NAME
+							, BIRTH
+							, PHONE
+							, CHOICE_1
+							, UNIQUE_ID)
+		VALUES(#{name}
+				, #{birth}
+				, #{phone}
+				, #{choice_1}
+				, #{unique_id})
+	</insert>
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.public_job.apply.service.impl.ApplyLotteryMapper">
+
+	<resultMap type="UserapplyVO" id="applyMap">
+		<result property="name" column="NAME"></result>
+		<result property="birth" column="BIRTH"></result>
+		<result property="phone" column="PHONE"></result>
+		<result property="choice_1" column="CHOICE_1"></result>
+		<result property="state" column="STATE"></result>
+		<result property="no" column="NO"></result>
+	</resultMap>
+	
+    <resultMap type="JobnoticeVO" id="noticeMap">
+		<result property="contents" column="CONTENTS"></result>
+		<result property="win" column="WIN"></result>
+		<result property="reserve" column="RESERVE"></result>
+		<result property="title" column="TITLE"></result>
+		<result property="lottery_check" column="LOTTERY_CHECK"></result>
+		<result property="unique_id" column="UNIQUE_ID"></result>
+		<result property="priority" column="PRIORITY"></result>
+		<result property="cr_priority" column="CR_PRIOIRTY"></result>
+		<result property="combineLotteryNum" column="COMBINE_LOTTERY_NUM"></result>
+		<result property="combineApplyList" column="COMBINE_APPLY_LIST"></result>
+	</resultMap>
+	
+	
+	<!-- 관리자_사용자 명단 무작위 뽑기 (JobNotice 당첨인원+예비인원) -->
+	<select id="applyRandomSelect" resultMap="applyMap"	parameterType="JobnoticeVO">
+		SELECT * 
+		FROM
+			(SELECT * 
+			FROM APPLY
+			WHERE STATE='Ready'
+ 			<if test='combineApplyList != null and combineApplyList.equals("N")'>
+ 			    AND CHOICE_1 = 'General'
+ 			</if>
+			AND UNIQUE_ID = #{unique_id}
+				ORDER BY DBMS_RANDOM.RANDOM
+		)
+		<choose>
+		    <when test='combineLotteryNum != null and combineLotteryNum.equals("Y")'>
+		            <![CDATA[WHERE ROWNUM <= (SELECT SUM(JOB_NOTICE.CR_PRIORITY + JOB_NOTICE.WIN + JOB_NOTICE.RESERVE) 
+								FROM JOB_NOTICE
+								WHERE JOB_NOTICE.UNIQUE_ID=#{unique_id})]]>
+		    </when>
+		    
+			 <when test='combineLotteryNum != null and combineLotteryNum.equals("N")'>
+		   		<![CDATA[WHERE ROWNUM <= (SELECT SUM(JOB_NOTICE.WIN+JOB_NOTICE.RESERVE) 
+								FROM JOB_NOTICE
+								WHERE JOB_NOTICE.UNIQUE_ID=#{unique_id})]]>
+			</when>
+			<!-- <![CDATA[WHERE ROWNUM <= (SELECT SUM(JOB_NOTICE.WIN+JOB_NOTICE.RESERVE) 
+								FROM JOB_NOTICE
+								WHERE JOB_NOTICE.UNIQUE_ID=#{unique_id})]]> -->
+		</choose>
+		
+	</select>
+
+	<!-- 무작위 추첨 후 업데이트 -->
+	<update id="LotteryResultUpdate">
+		UPDATE APPLY
+		SET STATE = #{state}, NO = #{no}
+		WHERE NAME = #{name}
+			AND BIRTH = #{birth}
+			AND PHONE = #{phone}
+			AND UNIQUE_ID = #{unique_id}
+	</update>
+
+	<!-- 추첨 후 당첨되지 않은 사용자 탈락 처리 -->
+	<update id="LotteryFailUpdate">
+		UPDATE APPLY
+		SET STATE = 'Fail'
+		WHERE STATE = 'Ready'
+		AND UNIQUE_ID = #{unique_id}
+	</update>
+
+	<!-- 모든 사용자 Ready로 변경 (단, PrioritySelection과 Cancle은 예외) -->
+	<update id="LotteryReset">
+		UPDATE APPLY
+		SET
+		STATE = 'Ready', NO = NULL
+		WHERE UNIQUE_ID = #{unique_id}
+		AND (STATE = 'Win'
+		OR STATE = 'Reserve'
+		OR STATE = 'Fail')
+		
+	</update>
+</mapper>

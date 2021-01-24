@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.public_job.apply.service.impl.UserListMapper">
+
+	<resultMap type="UserapplyVO" id="applyMap">
+		<result property="name" column="NAME"></result>
+		<result property="birth" column="BIRTH"></result>
+		<result property="phone" column="PHONE"></result>
+		<result property="choice_1" column="CHOICE_1"></result>
+		<result property="state" column="STATE"></result>
+		<result property="no" column="NO"></result>
+		<result property="apply_date" column="APPLY_DATE"></result>
+		<result property="unique_id" column="UNIQUE_ID"></result>
+	</resultMap>
+
+
+	<!-- 관리자_신청자 명단 확인 쿼리문 -->
+	<select id="applylist" resultMap="applyMap" parameterType="UserapplyVO">
+		SELECT SEQ2, SEQ, NAME, BIRTH, PHONE, CHOICE_1, STATE, NO, APPLY_DATE, UNIQUE_ID
+		FROM (
+			SELECT ROWNUM AS SEQ2, SEQ, NAME, BIRTH, PHONE, CHOICE_1, STATE, NO, APPLY_DATE, UNIQUE_ID
+			FROM (
+				SELECT ROW_NUMBER() OVER (ORDER BY ROWNUM DESC) AS SEQ, NAME, BIRTH, PHONE, CHOICE_1, STATE, NO, APPLY_DATE, UNIQUE_ID 
+        		FROM(
+        			SELECT * 
+           			FROM APPLY 
+           			WHERE UNIQUE_ID = #{unique_id}
+						<if test="state != null and state != ''">
+							AND STATE = #{state}
+						</if>	
+						<if test="orderBy == null or orderBy == ''">
+							ORDER BY APPLY_DATE DESC
+						</if>
+						<if test="orderBy == 'sort_No'">
+							ORDER BY NO ASC   
+						</if>
+					)
+				WHERE 1=1
+				<if test="searchKeyword != null and searchKeyword != ''">
+		        	<choose>
+		            	<when test="searchCondition == 1">
+						AND	NAME LIKE '%' || #{searchKeyword} || '%'
+						</when>
+		            	<when test="searchCondition == 2">
+							AND	BIRTH LIKE '%' || #{searchKeyword} || '%'
+						</when>
+						<when test="searchCondition == 3">
+							AND	PHONE LIKE '%' || #{searchKeyword} || '%'
+						</when>
+					</choose>
+				</if>
+				ORDER BY SEQ DESC
+        		)
+    		)
+    	<if test="firstIndex != 0 and lastIndex != 0 ">	
+      	WHERE SEQ2 BETWEEN #{firstIndex} AND #{lastIndex}
+      	</if>
+	</select>
+	
+	<select id="priorityApplyList" resultMap="applyMap" parameterType="UserapplyVO">
+	    SELECT SEQ2, SEQ, NAME, BIRTH, PHONE, CHOICE_1, STATE, NO, APPLY_DATE, UNIQUE_ID
+		FROM (
+			SELECT ROWNUM AS SEQ2, SEQ, NAME, BIRTH, PHONE, CHOICE_1, STATE, NO, APPLY_DATE, UNIQUE_ID
+			FROM (
+				SELECT ROW_NUMBER() OVER (ORDER BY ROWNUM DESC) AS SEQ, NAME, BIRTH, PHONE, CHOICE_1, STATE, NO, APPLY_DATE, UNIQUE_ID 
+        		FROM(
+        			SELECT * 
+           			FROM APPLY 
+           			WHERE UNIQUE_ID = #{unique_id}
+           			AND CHOICE_1='Priority'
+           				<if test="state != null and state != ''">
+							AND STATE = #{state}
+						</if>
+						<if test="orderBy == null or orderBy == ''">
+							ORDER BY APPLY_DATE DESC
+						</if>
+						<if test="orderBy == 'sort_No'">
+							ORDER BY NO ASC   
+						</if>
+					)
+				WHERE 1=1
+				<if test="searchKeyword != null and searchKeyword != ''">
+		        	<choose>
+		        	    <when test="searchCondition == 0">
+							AND	NAME LIKE '%' || #{searchKeyword} || '%'
+							OR BIRTH LIKE '%' || #{searchKeyword} || '%'
+							OR PHONE LIKE '%' || #{searchKeyword} || '%'
+						</when>
+		            	<when test="searchCondition == 1">
+							AND	NAME LIKE '%' || #{searchKeyword} || '%'
+						</when>
+		            	<when test="searchCondition == 2">
+							AND	BIRTH LIKE '%' || #{searchKeyword} || '%'
+						</when>
+						<when test="searchCondition == 3">
+							AND	PHONE LIKE '%' || #{searchKeyword} || '%'
+						</when>
+					</choose>
+				</if>
+				ORDER BY SEQ DESC
+        		)
+    		)
+    	<if test="firstIndex != 0 and lastIndex != 0 ">	
+      	WHERE SEQ2 BETWEEN #{firstIndex} AND #{lastIndex}
+      	</if>
+	    
+	</select>
+
+	<select id="prioritySeletionApplyList" resultMap="applyMap" parameterType="UserapplyVO">
+	    SELECT * 
+	    FROM APPLY
+	    WHERE UNIQUE_ID = #{unique_id}
+	    AND STATE='PrioritySelection'
+        ORDER BY NO ASC
+
+	 </select>
+	
+	<select id="selectSampleListTotCnt" parameterType="UserapplyVO" resultType="int">
+
+			SELECT COUNT(*)
+			FROM APPLY
+			WHERE UNIQUE_ID = #{unique_id}
+			<if test="state != null and state != ''">
+			    AND STATE = #{state}
+			</if>
+			<if test="choice_1 != null and choice_1 != ''">
+			    AND CHOICE_1= #{choice_1}
+			</if>
+			<if test="searchKeyword != null and searchKeyword != ''">
+				<choose>
+					<when test="searchCondition == 1">
+						AND NAME LIKE '%' || #{searchKeyword} || '%'
+					</when>
+					<when test="searchCondition == 2">
+						AND BIRTH LIKE '%' || #{searchKeyword} || '%'
+					</when>
+					<when test="searchCondition == 3">
+						AND PHONE LIKE '%' || #{searchKeyword} || '%'
+					</when>
+				</choose>
+			</if>	
+	</select>
+	
+</mapper>

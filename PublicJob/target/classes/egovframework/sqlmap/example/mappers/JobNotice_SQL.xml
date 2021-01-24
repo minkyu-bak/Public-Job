@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.public_job.notice.service.impl.JobnoticeMapper">
+    
+    <resultMap type="JobnoticeVO" id="noticeMap">
+		<result property="contents" column="CONTENTS"></result>
+		<result property="win" column="WIN"></result>
+		<result property="reserve" column="RESERVE"></result>
+		<result property="title" column="TITLE"></result>
+		<result property="lottery_check" column="LOTTERY_CHECK"></result>
+		<result property="unique_id" column="UNIQUE_ID"></result>
+		<result property="priority" column="PRIORITY"></result>
+		<result property="cr_priority" column="CR_PRIOIRTY"></result>
+		<result property="combineLotteryNum" column="COMBINE_LOTTERY_NUM"></result>
+		<result property="combineApplyList" column="COMBINE_APPLY_LIST"></result>
+	</resultMap>
+	
+<!--     <resultMap type="JobFileVO" id="jobFilMap">
+        <result property="fileNO" column="FILE_NO"></result>
+        <result property="noticeNO" column="NOTICE_NO"></result>
+        <result property="orgFileName" column="ORG_FILE_NAME"></result>
+        <result property="storedFileName" column="STORED_FILE_NAME"></result>
+        <result property="fileSize" column="FILE_SIZE"></result>
+        <result property="regdate" column="REGDATE"></result>
+        <result property="delGB" column="DEL_GB"></result>
+    </resultMap> -->
+    
+    <!-- 관리자_일자리 게시판 목록 조회 -->
+    <select id="jobNoticeBoardList" resultMap="noticeMap" parameterType="JobnoticeVO">
+ 	SELECT SEQ2, SEQ, PRIORITY, CR_PRIORITY, WIN, RESERVE, CONTENTS, TITLE, LOTTERY_CHECK, COMBINE_LOTTERY_NUM, COMBINE_APPLY_LIST, UNIQUE_ID, CREATE_DATE
+	FROM (
+		SELECT ROWNUM AS SEQ2, SEQ, PRIORITY, CR_PRIORITY, WIN, RESERVE, CONTENTS, TITLE, LOTTERY_CHECK, COMBINE_LOTTERY_NUM, COMBINE_APPLY_LIST, UNIQUE_ID, CREATE_DATE
+		FROM (
+			SELECT ROW_NUMBER() OVER (ORDER BY ROWNUM DESC) AS SEQ, PRIORITY, CR_PRIORITY, WIN, RESERVE, CONTENTS, TITLE, LOTTERY_CHECK, COMBINE_LOTTERY_NUM, COMBINE_APPLY_LIST, UNIQUE_ID, CREATE_DATE 
+			FROM(
+				SELECT *
+				FROM JOB_NOTICE
+				WHERE 1=1
+				<if test="searchKeyword != null and searchKeyword != ''">
+		        <choose>
+		            <when test="searchCondition == 0">
+						AND	TITLE LIKE '%' || #{searchKeyword} || '%'
+						OR CONTENTS LIKE '%' || #{searchKeyword} || '%'
+					</when>
+		            <when test="searchCondition == 1">
+						AND	TITLE LIKE '%' || #{searchKeyword} || '%'
+					</when>
+		            <when test="searchCondition == 2">
+						AND	CONTENTS LIKE '%' || #{searchKeyword} || '%'
+					</when>
+				</choose>
+				</if>
+				ORDER BY UNIQUE_ID DESC
+				)
+			ORDER BY SEQ DESC
+			)
+ 		 )
+	WHERE SEQ2 BETWEEN #{firstIndex} AND #{lastIndex}
+<!-- 	WHERE SEQ2 BETWEEN 1 AND 10  -->
+    </select>
+    
+
+    <!-- 관리자_일자리 게시판 생성 -->
+    <insert id="jobNoticeCreate">
+        INSERT INTO JOB_NOTICE(PRIORITY
+        						, CR_PRIORITY
+        						, WIN
+        						, RESERVE
+        						, COMBINE_LOTTERY_NUM
+        						, COMBINE_APPLY_LIST
+        						, TITLE
+        						, CONTENTS
+        						, UNIQUE_ID)
+        VALUES(#{priority}
+        		, #{priority}
+        		, #{win}
+        		, #{reserve}
+        		, #{combineLotteryNum}
+        		, #{combineApplyList}
+        		, #{title}
+        		, #{contents}
+        		, SEQ_NOTICE.NEXTVAL )
+    </insert>
+    
+    <insert id="jobFileInsert" parameterType="hashMap">
+        INSERT INTO JOB_FILE
+        	( FILE_NO
+        	  , NOTICE_NO
+        	  , ORG_FILE_NAME
+        	  , STORED_FILE_NAME
+        	  , FILE_SIZE )
+       VALUES ( SEQ_JOB_FILE_NO.NEXTVAL
+       			, #{NOTICE_NO}
+       			, #{ORG_FILE_NAME}
+       			, #{STORED_FILE_NAME}
+       			, #{FILE_SIZE})
+    </insert>
+
+
+    <!-- 일자리 공고 정보 조회쿼리문 -->
+	<select id="jobNoticeInfo" resultMap="noticeMap" parameterType="JobnoticeVO" >
+		SELECT *
+		FROM JOB_NOTICE
+		WHERE UNIQUE_ID = #{unique_id}
+
+	</select>
+	<!-- 일자리 공공 첨부파일 리스트 조회 -->
+    <select id="jobFileList" parameterType="int" resultType="hashMap">
+        SELECT FILE_NO
+        		, ORG_FILE_NAME
+        		, ROUND(FILE_SIZE/1024,1) AS FILE_SIZE
+        FROM JOB_FILE
+        WHERE NOTICE_NO = #{unique_id}
+        AND DEL_GB = 'N'
+		ORDER BY FILE_NO ASC
+    </select> 
+    
+    <!-- 일자리 공보 첨부파일 정보 조회 (첨부파일 다운) -->
+    <select id="jobFileInfo" parameterType="hashMap" resultType="hashMap">
+		SELECT STORED_FILE_NAME
+				, ORG_FILE_NAME
+		FROM JOB_FILE
+		WHERE FILE_NO = #{FILE_NO}
+	</select>
+	
+    <update id="jobFileUpdate" parameterType="hashMap">
+        UPDATE JOB_FILE
+        SET DEL_GB = 'Y'
+        WHERE FILE_NO = #{FILE_NO}
+    </update>
+    
+    
+	
+	<!-- 관리자_일자리 공고 내용 변경 쿼리문 -->
+	<update id="noticeUpdate" parameterType="JobnoticeVO">
+		UPDATE JOB_NOTICE
+		SET TITLE = #{title}
+			, CONTENTS = #{contents}
+			, PRIORITY = #{priority}
+			, WIN = #{win}
+			, RESERVE = #{reserve}
+			, COMBINE_LOTTERY_NUM = #{combineLotteryNum}
+        	, COMBINE_APPLY_LIST = #{combineApplyList}
+		WHERE UNIQUE_ID = #{unique_id}
+	</update>
+	
+
+	<!-- 관리자_일자리 추첨체크 값 변경 쿼리문 -->
+	<update id="lotteryCheckUpdate">
+		UPDATE JOB_NOTICE
+		SET LOTTERY_CHECK = #{lottery_check}
+		WHERE UNIQUE_ID = #{unique_id}
+	</update>
+	
+	<update id="UpdateNoticeCR_Priority">
+	    UPDATE JOB_NOTICE
+		SET CR_PRIORITY = #{cr_priority}
+		WHERE UNIQUE_ID = #{unique_id}
+	</update>
+	
+	<select id="selectJobnoticeListTotCnt" parameterType="JobnoticeVO" resultType="int">
+	    SELECT COUNT(*)
+		FROM JOB_NOTICE
+		WHERE 1=1
+		<if test="searchKeyword != null and searchKeyword != ''">
+			<choose>
+			    <when test="searchCondition == 1">
+					AND	TITLE LIKE '%' || #{searchKeyword} || '%'
+				</when>
+		        <when test="searchCondition == 2">
+					AND	CONTENTS LIKE '%' || #{searchKeyword} || '%'
+				</when>
+			</choose>
+		</if>	
+	</select>
+	
+</mapper>

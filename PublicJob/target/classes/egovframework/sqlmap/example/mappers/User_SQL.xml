@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.user_member.service.impl.UserMapper">
+	<resultMap id="userVO" type="UserVO">
+		<result property="userId" column="USER_ID" />
+		<result property="userPassword" column="USER_PASSWORD" />
+		<result property="userName" column="USER_NAME" />
+		<result property="userRN" column="USER_RN" />
+		<result property="userPhone" column="USER_PHONE" />
+		<result property="userEmail" column="USER_EMAIL" />
+		<result property="userAddressCode" column="USER_ADDRESS_CODE" />
+		<result property="userAddressOrigin" column="USER_ADDRESS_ORIGIN" />
+		<result property="userAddressDetail" column="USER_ADDRESS_DETAIL" />
+		<result property="userAddressExtra" column="USER_ADDRESS_EXTRA" />
+		<result property="userJoinDate" column="USER_JOINDATE" />
+		<result property="userEmailCertification" column="USER_EMAIL_CERTIFICATION" />
+	</resultMap>
+
+	<select id="user_idChk" resultType="int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE USER_ID = #{userId}
+	</select>
+
+	<!-- 사용자_회원가입 -->
+	<insert id="userSignUp">
+         INSERT INTO MEMBER 
+         	( USER_ID
+         		, USER_PASSWORD
+         		, USER_NAME
+         		, USER_RN
+         		, USER_PHONE
+         		, USER_EMAIL
+         		, USER_ADDRESS_CODE
+         		, USER_ADDRESS_ORIGIN
+         		, USER_ADDRESS_DETAIL
+         		, USER_ADDRESS_EXTRA
+         		, USER_EMAIL_CERTIFICATION)
+         VALUES
+         	(#{userId}
+         		, #{userPassword}
+         		, #{userName}
+         		, #{userRN}
+         		, #{userPhone}
+         		, #{userEmail}
+         		, #{userAddressCode}
+         		, #{userAddressOrigin}
+         		, #{userAddressDetail}
+         		, #{userAddressExtra}
+         		, 'N')
+	</insert>
+
+	<!-- 사용자_로그인 -->
+	<select id="userSignIn" resultType="int" parameterType="UserVO">
+		SELECT count(*)
+		FROM MEMBER
+		WHERE USER_ID = #{userId}
+		AND USER_PASSWORD = #{userPassword}
+	</select>
+
+	<!-- 사용자 정보 조회 -->
+	<select id="userInfo" resultMap="userVO" parameterType="UserVO">
+		SELECT *
+		FROM MEMBER
+		WHERE USER_ID = #{userId}
+	</select>
+
+	<!-- 관리자_사용자 명단조회 -->
+	<select id="userList" resultMap="userVO" parameterType="UserVO">
+		SELECT *
+		FROM MEMBER
+		WHERE 1=1
+		<if test="searchKeyword != null and searchKeyword != ''">
+			<choose>
+				<when test="searchCondition == 1">
+					AND USER_ID LIKE '%' || #{searchKeyword} || '%'
+				</when>
+				<when test="searchCondition == 2">
+					AND USER_NAME LIKE '%' || #{searchKeyword} || '%'
+				</when>
+				<when test="searchCondition == 3">
+					AND USER_EMAIL LIKE '%' || #{searchKeyword} || '%'
+				</when>
+			</choose>
+		</if>
+	</select>
+
+	<select id="selectSampleListTotCnt" parameterType="UserVO"	resultType="int">
+		SELECT COUNT(*)
+		FROM MEMBER
+	</select>
+	
+	<!-- 사용자 정보 업데이트 -->
+	<update id="userInfoUpdate" parameterType="UserVO">
+	    UPDATE MEMBER
+	    SET USER_EMAIL = #{userEmail}
+	    	, USER_PHONE = #{userPhone}
+	    	, USER_ADDRESS_CODE = #{userAddressCode}
+	    	, USER_ADDRESS_ORIGIN = #{userAddressOrigin}
+	    	, USER_ADDRESS_DETAIL = #{userAddressDetail}
+	    	, USER_ADDRESS_EXTRA = #{userAddressExtra}
+	    WHERE USER_ID = #{userId}
+	</update>
+
+	<!-- 사용자 계정 패스워드 변경 -->
+	<update id="userPasswordUpdate" parameterType="UserVO">
+	    UPDATE MEMBER
+	    SET USER_PASSWORD = #{userPassword}
+	    WHERE USER_ID = #{userId}
+	</update>
+
+	<!-- 사용자 회원탈퇴 -->
+	<update id="userDelete">
+	    UPDATE MEMBER
+	    SET USER_PASSWORD = NULL
+	    	, USER_NAME = NULL
+	    	, USER_RN = NULL
+	    	, USER_PHONE = NULL
+	    	, USER_EMAIL = NULL
+	    	, USER_ADDRESS_CODE = NULL
+	    	, USER_ADDRESS_ORIGIN = NULL
+	    	, USER_ADDRESS_DETAIL = NULL
+	    	, USER_ADDRESS_EXTRA = NULL
+	    	, USER_JOINDATE = NULL
+	    WHERE USER_ID = #{userId}
+	</update>
+	
+	<!-- 이메일 인증 후 업데이트 -->
+	<update id="emailCertification" parameterType="UserVO">
+	    UPDATE MEMBER
+	    SET USER_EMAIL_CERTIFICATION = 'Y'
+	    WHERE USER_ID = #{userId}
+	</update>
+	
+	<!-- 아이디 또는 비밀번호 -->
+	<select id="Inquiry" resultMap="userVO" parameterType="UserVO">
+	SELECT *
+	FROM MEMBER
+	WHERE USER_EMAIL = #{userEmail}
+	<choose>
+		<when test="userName != null and userId == null">
+			AND USER_NAME = #{userName}
+		</when>
+		<when test="userId != null and userName == null">
+			AND USER_ID = #{userId}
+		</when>
+	</choose>
+	</select>
+
+</mapper>

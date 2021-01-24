@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="egovframework.admin_login.service.impl.AdminBoardListMapper">
+
+    <resultMap id="AdminVO" type="AdminVO">
+		<result property="adminId" column="ADMIN_ID"/>
+		<result property="adminPassword" column="ADMIN_PASSWORD"/>
+		<result property="adminName" column="ADMIN_NAME"/>
+		<result property="adminEmail" column="ADMIN_EMAIL"/>
+		<result property="adminPhone" column="ADMIN_PHONE"/>
+		<result property="adminPermission" column="ADMIN_PERMISSION"/>
+		<result property="adminDate" column="ADMIN_DATE"/>
+	</resultMap> 
+	
+	<select id="AdminBoardListSelect" resultMap="AdminVO" parameterType="AdminVO">
+	    SELECT *
+	    FROM ADMIN
+	    WHERE 1=1
+				<if test="searchKeyword != null and searchKeyword != ''">
+		        <choose>
+		            <when test="searchCondition == 1">
+						AND	ADMIN_ID LIKE '%' || #{searchKeyword} || '%'
+					</when>
+					<when test="searchCondition == 2">
+						AND	ADMIN_NAME LIKE '%' || #{searchKeyword} || '%'
+					</when>
+		            <when test="searchCondition == 3">
+						AND	ADMIN_EMAIL LIKE '%' || #{searchKeyword} || '%'
+					</when>
+				</choose>
+				</if>
+     </select>
+	
+	
+	<select id="AdminInfo" resultMap="AdminVO" parameterType="AdminVO" >
+		SELECT *
+		FROM ADMIN
+		WHERE ADMIN_ID = #{adminId}
+	</select>
+	
+	<insert id="AddAdmin">
+		INSERT INTO ADMIN (ADMIN_ID
+							, ADMIN_PASSWORD
+							, ADMIN_NAME
+							, ADMIN_EMAIL
+							, ADMIN_PHONE
+							, ADMIN_PERMISSION)
+		VALUES(#{adminId}
+							, #{adminPassword}
+							, #{adminName}
+							, #{adminEmail}
+							, #{adminPhone}
+							, #{adminPermission})
+	</insert>
+	
+	<select id="AdminLimit" parameterType="AdminVO" resultType="int">
+			SELECT COUNT(*)
+			FROM ADMIN
+	</select>
+	
+	<update id="AdminInfoUpdate" parameterType="AdminVO">
+	    UPDATE ADMIN
+	    SET ADMIN_EMAIL = #{adminEmail}, ADMIN_PHONE = #{adminPhone}, ADMIN_PERMISSION = #{adminPermission}
+	    WHERE ADMIN_ID = #{adminId}
+	</update>
+	
+	<update id="AdminPasswordUpdate">
+	    UPDATE ADMIN
+		SET ADMIN_PASSWORD = #{adminPassword}		
+		WHERE ADMIN_ID = #{adminId}		
+	</update>
+	
+	<update id="AdminDelete">
+	    UPDATE ADMIN
+	    SET ADMIN_PASSWORD = NULL,
+	    	ADMIN_NAME = 'UNKNOWN',
+	    	ADMIN_EMAIL = NULL,
+	    	ADMIN_PHONE = NULL,
+	    	ADMIN_PERMISSION = NULL,
+	    	ADMIN_DATE = NULL
+	    WHERE ADMIN_ID = #{adminId}
+	</update>
+	
+	<select id="admin_idChk" resultType="int">
+	    SELECT COUNT(*)
+	    FROM ADMIN
+	    WHERE ADMIN_ID = #{adminId}
+	</select>
+
+</mapper>

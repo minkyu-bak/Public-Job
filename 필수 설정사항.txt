@@ -1,0 +1,23 @@
+[DataBase 설정]
+Path : src/main/resource/egovframework/spring/context-datawource.xml
+bean id = dataSource
+url, username, password 변경
+=========================================================
+[이메일 전송 설정]
+Path : src/main/webapp/WEB-INF/config/egovframework/springmvc/dispatcher-servlet.xml
+bean id = mailSender 
+username : [송신 이메일 주소]
+password : [송신 이메일 비밀번호]
+
+Path : src/main/java/egovframework/user_member/web/Usercontroller.java
+line : 66, 223, 272, 333
+mailSender에서 설정한 송신 이메일 주소 입력
+=========================================================
+[파일 저장 설정]
+Path : src/main/java/egovframework/cmmn/FileUiles.java
+line : 22
+filePath 파일 저장 경로 입력 
+예: C:\\ (\를 두개씩 입력해야 함)
+
+
+

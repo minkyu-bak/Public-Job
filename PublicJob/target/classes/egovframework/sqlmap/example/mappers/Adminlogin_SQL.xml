@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.admin_login.service.impl.AdminLoginMapper">
+    
+    
+    <resultMap id="adminVO" type="egovframework.admin_login.service.AdminVO">
+		<result property="adminId" column="ADMIN_ID"/>
+		<result property="adminPassword" column="ADMIN_PASSWORD"/>
+		<result property="adminName" column="ADMIN_NAME"/>
+		<result property="adminEmail" column="ADMIN_EMAIL"/>
+		<result property="adminPhone" column="ADMIN_PHONE"/>
+		<result property="adminPermission" column="ADMIN_PERMISSION"/>
+		<result property="adminDate" column="ADMIN_DATE"/>
+		</resultMap> 
+
+	<select id="login" resultType="_int" parameterType="egovframework.admin_login.service.AdminVO">
+		SELECT count(*)
+		FROM ADMIN
+		WHERE ADMIN_ID = #{adminId}
+		AND ADMIN_PASSWORD = #{adminPassword}
+	</select>
+	
+</mapper>

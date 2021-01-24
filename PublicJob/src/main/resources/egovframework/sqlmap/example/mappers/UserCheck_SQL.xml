@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.public_job.apply.service.impl.UserCheckMapper">
+
+
+	<resultMap type="UserapplyVO" id="applyMap">
+		<result property="name" column="NAME"></result>
+		<result property="birth" column="BIRTH"></result>
+		<result property="phone" column="PHONE"></result>
+		<result property="choice_1" column="CHOICE_1"></result>
+		<result property="state" column="STATE"></result>
+		<result property="no" column="NO"></result>
+		<result property="apply_date" column="APPLY_DATE"></result>
+		<result property="unique_id" column="UNIQUE_ID"></result>
+	</resultMap>
+
+	<!-- 사용자 인증하기 -->
+	<select id="userIdentify" resultType="_int" parameterType="UserapplyVO">
+		SELECT count(*)
+		FROM APPLY
+		WHERE NAME = #{name}
+		AND BIRTH =	#{birth}
+		AND	PHONE = #{phone}
+	</select>
+
+	<!-- 사용자 인증 후 사용자 정보 가져오기 -->
+	<select id="userApplyCheck" resultMap="applyMap" parameterType="egovframework.public_job.apply.service.UserapplyVO">
+		SELECT *
+		FROM APPLY
+		WHERE NAME = #{name}
+		AND BIRTH = #{birth}
+		AND PHONE =	#{phone}
+		<if test="unique_id != 0" >
+			AND UNIQUE_ID = #{unique_id}
+		</if>
+	</select>
+
+	<select id="userApplyCheckVO" resultMap="applyMap" parameterType="egovframework.public_job.apply.service.UserapplyVO">
+		SELECT *
+		FROM APPLY
+		WHERE NAME = #{name}
+		AND BIRTH = #{birth}
+		AND PHONE =	#{phone}
+		<if test="unique_id != null and unique_id != ''">
+			AND UNIQUE_ID = #{unique_id}
+		</if>
+	</select>
+	
+	
+	<!-- 사용자 정보 수정 후 업데이트 -->
+	<update id="userApplyChange">
+		UPDATE APPLY
+		SET
+		CHOICE_1 = #{choice_1}
+		WHERE NAME = #{name}
+		AND BIRTH =	#{birth}
+		AND PHONE = #{phone}
+		AND UNIQUE_ID = #{unique_id}
+	</update>
+
+	<!-- 사용자 신청 취소 -->
+	<update id="userApplyCancle">
+		UPDATE APPLY
+		SET
+		STATE = 'Cancle'
+		WHERE NAME = #{name}
+		AND BIRTH = #{birth}
+		AND PHONE = #{phone}
+		AND UNIQUE_ID = #{unique_id}
+	</update>
+
+</mapper>

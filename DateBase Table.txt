@@ -1,0 +1,67 @@
+[1] ADMIN
+    (1) ADMIN_ID            |       VARCHAR(20)
+    (2) ADMIN_PASSWORD      |       VARCHAR(50)
+    (3) ADMIN_NAME          |       VARCHAR(20)
+    (4) ADMIN_EMAIL         |       VARCHAR(30)
+    (5) ADMIN_PHONE         |       VARCHAR(13)
+    (6) ADMIN_PERMISSION    |       VARCHAR(5)
+    (7) ADMIN_DATE          |       DATE
+    
+[1-1] 제약조건
+    1. ADMIN_ID_PK    |       Primary_Key
+            (1) ADMIN_ID
+     
+    2. ADMIN_PHONE_UK |       Unique
+            (1) ADMIN_PHONE
+==============================================
+[2] APPLY
+    (1) NAME                |       VARCHAR(20)
+    (2) BIRTH               |       VARCHAR(6)
+    (3) PHONE               |       VARCHAR(20)
+    (4) CHOICE_1            |       VARCHAR(20)
+    (7) STATE               |       VARCHAR(20)
+    (8) NO                  |       NUMBER(10)
+    (9) APPLY_DATE          |       DATE
+    (10) UNIQUE_ID          |       NUMBER(10)
+
+[2-1] 제약조건
+    1. APPLY_IDENTIFY |       Primary_Key
+              (1) NAME
+              (2) BIRTH
+              (3) PHONE
+              (4) UNIQUE_ID
+
+    2.PHONE_UQ              |       Unique
+              (1) PHONE
+              (2) UNIQUE_ID
+==============================================
+[3] JOB_NOTICE
+    (1) TITLE               |       VARCHAR(50)
+    (2) CONTENTS            |       VARCHAR(4000)
+    (3) WIN                 |       NUMBER(10)
+    (4) RESERVE             |       NUMBER(5)
+    (5) LOTTERY_CHECK       |       VARCHAR(1)
+    (6) UNIQUE_ID           |       NUMBER(10)
+    (7) CREATE_DATE         |       DATE
+==============================================
+[4] MEMBER
+    (1) USER_ID             |       VARCHAR(20)
+    (2) USER_PASSWORD       |       VARCHAR(20) 
+    (3) USER_NAME           |       VARCHAR(20)
+    (4) USER_RN             |       VARCHAR(8)
+    (5) USER_PHONE          |       VARCHAR(13)
+    (6) USER_EMAIL          |       VARCHAR(20)
+    (7) USER_ADDRESS_CODE   |       VARCHAR(10)
+    (8) USER_ADDRESS_ORIGIN |       VARCHAR(100)
+    (9) USER_ADDRESS_DETAIL |       VARCHAR(100)
+    (10) USER_ADDRESS_EXTRA |       VARCHAR(50)
+    (11) USER_JOINDATE      |       DATE
+==============================================
+[5] Job_File
+    (1) FILE_NO		|	NUMBER
+    (2) NOTICE_NO		|	NUMBER
+    (3) ORG_FILE_NAME	| 	VARCHAR2(260)
+    (4) STORED_FILE_NAME	|	VARCHAR2(36)
+    (5) FILE_SIZE		|	NUMBER
+    (6) REGDATE		|	DATE
+    (7) DEL_GB		| 	VARCHAR2(1)
