@@ -418,9 +418,20 @@ public class UserController {
 	@RequestMapping(value = "user_UserInfoUpdate", method = RequestMethod.POST)
 	public String userInfoUpdate(UserVO userVO, HttpSession session, RedirectAttributes rttr, HttpServletRequest request) throws Exception {
 		if(userService.userInfo(userVO).getUserEmail().equals(userVO.getUserEmail1()+"@"+userVO.getUserEmail2())){
-			userService.userInfoUpdate(userVO);
-			rttr.addFlashAttribute("msg", "정보 변경이 완료되었습니다.");
-			return "redirect:user_MyPage";
+			try{
+				userService.userInfoUpdate(userVO);
+				
+				session.removeAttribute("userLoginSessionInfo");
+				UserVO userLoginSessionInfo = userService.userInfo(userVO);
+				session.setAttribute("userLoginSessionInfo", userLoginSessionInfo);
+				
+				rttr.addFlashAttribute("msg", "정보 변경이 완료되었습니다.");
+				return "redirect:user_MyPage";
+			}catch(Exception e) {
+				e.printStackTrace();
+				rttr.addFlashAttribute("msg", "이미 등록된 회원정보가 있습니다.");
+				return "redirect:user_MyPage";
+			}
 		}else if(request.getParameter("userKeyCheck1").equals("Y")){
 			userService.userInfoUpdate(userVO);
 			rttr.addFlashAttribute("msg", "정보 변경이 완료되었습니다.");
